@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario de Registro</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body> 
+    
+   <div class="layaut contenedor mt-40 mb-40"
+>
+
+   <div>    
+             <form class="form" novalidate>
+                <input class="text" id="users"  placeholder="este es mi primer id"> </input>
+                 <label for="nombre">Nombre:</label>
+                    <input type="text" id="nombre" placeholder="Nombre" name="nombre" autocomplete="off" required >
+            
+            
+                         <label for="apellido">Apellido:</label>
+                         <input type="text" placeholder="Apellido" id="apellido" name="apellido" autocomplete="off" required >
+        
+            
+                          <label for="telefono">Teléfono:</label>
+                          <input type="number" placeholder="Teléfono" id="telefono" name="telefono" autocomplete="off" required>
+                
+            
+                          <label for="direccion">Dirección:</label>
+                          <input type="text" placeholder="Dirección" id="direccion" name="direccion" autocomplete="off" required>
+
+                            <label for="Email">Email:</label>
+                            <input type="text" placeholder="email" id="email" class="input" required>
+
+          
+                            <label for="tipo_documento">Tipo de Documento:</label>
+                            <select id="tipo_documento" name="tipo_documento" required >
+    
+
+                            </select>
+                                  <label for="documento">Documento:</label>
+                                  <input type="number" id="documento" placeholder="Documento"  name="documento" autocomplete="off" required >
+                  <div class="politicas">
+                   <input type="checkbox" id="politicas"> 
+                   <label for="politias">Acepta las politiasde uso</label>
+                 </div>
+                <button id="button" type="submit"  disabled="disabled">Enviar</button>
+                </form>
+   </div>
+
+<div class="table">
+    <table>
+    <thead>
+        <th>Nombre</th>
+        <th>Apellido</th>
+        <th>Telefono</th>
+        <th>Direccion</th>
+        <th>Correo</th>
+        <th>tipo_documento</th>
+        <th>Numero_documento</th>
+    </thead>
+    <tbody>
+</table>
+
+
+</div>
+</div>   
+<template id="tb_users">
+    <tr >
+        <td class="nombre"></td>
+        <td class="apellido"></td>
+        <td class="telefono"></td>
+        <td class="direccion"></td>
+        <td class="email"></td>
+        <td class="tipo_documento"></td>
+        <td class="numero_documento"></td>
+        <td>
+            <div>
+            <button class="modificar">Modificar</button>
+            <button class="eliminar">Eliminar</button>
+            </div>
+        </td>
+    </tr>
+</template>
+</tbody>
+    <script src="script.js" type="module"></script>
+</body>
+</html>
