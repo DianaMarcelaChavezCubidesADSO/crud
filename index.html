@@ -13,7 +13,7 @@
 
    <div>    
              <form class="form" novalidate>
-                <input class="text" id="users"  placeholder="este es mi primer id"> </input>
+                <input type="hidden" id="user"> </input>
                  <label for="nombre">Nombre:</label>
                     <input type="text" id="nombre" placeholder="Nombre" name="nombre" autocomplete="off" required >
             
@@ -64,7 +64,13 @@
 
 
 </div>
-</div>   
+</div> 
+<nav class="navigation">
+    <button class="first">First</button>
+    <button class="prev">Prev</button>
+    <button class="next">Next</button>
+    <button class="last">Last</button>
+</nav>  
 <template id="tb_users">
     <tr >
         <td class="nombre"></td>

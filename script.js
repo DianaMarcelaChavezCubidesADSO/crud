@@ -20,54 +20,93 @@ const fragmento = document.createDocumentFragment();
 const tbody = document.querySelector("tbody");
 const id = document.querySelector(`#user`);
 
+
+console.log(tb_users);
+
+const cantidad = (elemento) => {
+    let value = elemento.value.length === 10;
+    if (value) {
+        elemento.classList.remove("correcto")
+        elemento.classList.add("error")
+    }else{
+        elemento.classList.remove("error")
+        elemento.classList.add("cantidad")
+    }
+}
 const documentos = () => {
-    const fragmento = document.createDocumentFragment();
-    let seleccionar = document.createElement("option");
-    seleccionar.value = "";
-    seleccionar.text = "Seleccionar";
-    fragmento.appendChild(seleccionar);
-    fetch('http://localhost:3000/documents')
-        .then((response) => response.json())
-        .then((data) => {
-            data.forEach(element => {
-                let option = document.createElement("option");
-                option.value = element.id;
-                option.text = element.nombre;
-                fragmento.appendChild(option);
-            });
-            tipo_documento.appendChild(fragmento); 
-        })
-        .catch((error) => {
-            console.error('Error:', error);
+    const fragmento = document.createDocumentFragment()
+    fetch(`${URL}/documents`)
+      .then(response => response.json())
+      .then((data)=> {
+        let option = document.createElement("option")
+        option.textContent = "Seleccione ...."
+        option.value = "";
+        fragmento.appendChild(option)
+        data.forEach(element => {
+        let option = document.createElement("option");
+        option.value = element.id;
+        option.textContent = element.name;
+        fragmento.appendChild(option)
         });
-};
+        tipo_documento.appendChild(fragmento)
+      });
+}
 
 documentos();
 
-const listar = async() => {
-    const data = await solicitud("users");
-    const documentos = await solicitud("documents");
+const listar = async(page) => {
+    const _page = page ? page : 1;
+    const data = await solicitud(`users?_page=${_page}&_per_page=8`);
+    const documentos = await solicitud("documents")
+    
+    const nav = document.querySelector(".navegacion");
+    const first = data.first;
+    const prev = data.prev;
+    const next = data.next;
+    const last = data.last;
 
-    data.forEach(element => {
-        let tipoDocumento = documentos.find((documento) => documento.id === element.type_id)?.nombre || "Desconocido";
-       
+    nav.querySelector(".first").disabled = first ? false : true;
+    nav.querySelector(".prev").disabled = prev ? false : true;
+    nav.querySelector(".next").disabled = next ? false : true;
+    nav.querySelector(".last").disabled = last ? false : true;
+
+    nav.querySelector(".first").setAttribute("data-first", first);
+    nav.querySelector(".prev").setAttribute("data-prev", prev);
+    nav.querySelector(".next").setAttribute("data-next", next);
+    nav.querySelector(".last").setAttribute("data-last", last)
+    
+
+console.log(data);
+
+console.log(nav);
+
+
+    
+    
+
+    data.data.forEach(element =>{
+        let nombre = documentos.find((documento) => documento.id === element.type_id).name;
+        
+        // tb_users.querySelector("tr").setAttribute("id", `user_${element.id}`)
+        tp_users.querySelector("tr").id = `user_${element.id}`;
+        
         tp_users.querySelector(".nombre").textContent = element.first_name;
         tp_users.querySelector(".apellido").textContent = element.last_name;
         tp_users.querySelector(".direccion").textContent = element.address;
-        tp_users.querySelector(".tipo_documento").textContent = tipoDocumento;
-        tp_users.querySelector(".email").textContent = element.email;
+        tp_users.querySelector(".correo").textContent = element.email;
         tp_users.querySelector(".telefono").textContent = element.phone;
-        tp_users.querySelector(".numero_documento").textContent = element.document;
-        tp_users.querySelector(".modificar").setAttribute("data-id", element.id);
-        tp_users.querySelector(".eliminar").setAttribute("data-id", element.id);
+        tp_users.querySelector(".tipo_documento").textContent = nombre;
+        tp_users.querySelector(".documento").textContent = element.document;
 
-        const clone = document.importNode(tp_users, true);
+        tp_users.querySelector(".modificar").setAttribute("data-id",element.id)
+        tp_users.querySelector(".eliminar").setAttribute("data-id",element.id)
+
+        const clone =document.importNode(tp_users, true);
         fragmento.appendChild(clone);
-    });
+    })
     tbody.appendChild(fragmento);
-};
 
-listar();
+}
 
 document.addEventListener('click', (e) => {
     if (e.target.matches(".modificar")) {
@@ -99,91 +138,110 @@ const createROW = (data) =>{
 }
 // createROW();
 
-const buscar = async (element) => {
-    const id = element.dataset.id;
-    console.log(id); // Verifica que el ID se está obteniendo correctamente
-
-    const response = await enviar(`users/${id}`, {
-        method: 'GET', // Cambia a GET para obtener los datos del usuario
-        headers: {
-            'Content-type': 'application/json; charset=UTF-8',
-        }
-    });
-
-    if (response) {
-        loadForm(response);
-    } else {
-        console.error('Error al obtener los datos del usuario');
-    }
-};
-
-const save =(event) =>{
-    let response = is_valid(event,"form [required]");
-    const data ={
-        first_name: nombre.value,
-        last_name: apellido.value,
-        address: direccion.value,
-        type_id: tipo_documento.value,
-        email: email.value,
-        phone :telefono.value,
-        document:documento.value,
-    }
-    if (response){
-        if(user.value === ""){
-            guardar(data)
-        }else{
-            actualiza(data)
-        }
-    }
-}
-
-const guardar = (data) =>{
-    console.log(data);
-    return
-    fetch(`${URL}/users`,
-        {
-            method :`post`,
-            body:JSON.stringify(data),
-            headers:{
+const buscar = async(element) =>{
+    const data = await enviar(`users/${element.dataset.id}`, //endpoint
+     {
+         method: "PATCH",
+         headers:{
+             'Content-type': 'application/json; charset=UTF-8',
+         }
+     });
+     loadForm(data)
+ }
+ 
+ const save = (event) =>  {
+     let response = is_valid(event, "form [required]");
+     const data ={
+         first_name: nombre.value,
+         last_name: apellido.value,
+         address: direccion.value,
+         type_id: tipo_documento.value,
+         email: correo.value,
+         phone: telefono.value,
+         document: documento.value,
+         }
+         if (response) {
+             if(user.value === ""){
+                 guardar(data)
+             }else{
+                 actualizar(data)
+                 console.log(document);
+                 
+             }
+             
+         }
+ }
+ 
+ 
+ 
+ const guardar = (data) => {
+    fetch(`${URL}/users`,{
+            method: "Post",
+            body: JSON.stringify(data),
+            headers: {
                 'Content-type': 'application/json; charset=UTF-8',
-        },        
-})
-    .then((response)=>response.json())
-    .then((json)=>{
+            },
+        })
+        .then((response) => response.json())
+        .then((json) => {
+            nombre.value = "";
+            apellido.value = "";
+            telefono.value = "";
+            direccion.value = "";
+            tipo_documento.selectedIndex = 0;
+            documento.value = "";
+            politicas.value = false;
+            correo.value = "";
 
-        nombre.value="" ;
-        apellido.value="" ;
-        direccion.value="" ;
-        email.value="" ;
-        telefono.value="" ;
-        documento.value="" ;
-        tipo_documento.selectedIndex = 0;
-        politicas.value = false;
 
-        createROW(json)
+            limpiarForm()
+
+            createROW(json)
+
+        });
+}
+
+
+
+const actualizar = async (data) => {
+    const response = await enviar(`users/${user.value}`,{
+        method: 'PUT',
+        body: JSON.stringify(data),
+        headers: {
+    'Content-type': 'application/json; charset=UTF-8',
+    }
     });
-
-}
-save();
-
-
-
-const actualiza = async(data) =>{
-const response = await  enviar (`users/${user.value}`,{
-    method :`PUT`,
-    body:JSON.stringify(data),
-    headers:{
-        'Content-type': 'application/json; charset=UTF-8',
-    },
-});
-console.log(response)
+    limpiarForm()
+    ediRow(response)
+    
 }
 
-const limpiarform = () =>{
-    nombre.value ="";
-
+const limpiarForm = () => {
+    nombre.value = "";
+    apellido.value = "";
+    telefono.value = "";
+    direccion.value = "";
+    correo.value = "";
+    tipo_documento.value = "";
+    documento.value = "";
+    politicas.checked = false;
+    button.removeAttribute ("disabled")
 }
-limpiarform();
+
+const ediRow = async (data) => {
+    const documentos = await solicitud("documents")
+    let nombre = documentos.find((documento)=> documento.id === data.type_id). name
+    const tr = document.querySelector(`#user_${data.id}`)
+    // nombre = tr.querySelector(".nombre");
+   tr.querySelector(".nombre").textContent = data.first_name;
+   tr.querySelector(".apellido").textContent = data.last_name;
+   tr.querySelector(".direccion").textContent = data.address;
+   tr.querySelector(".tipo_documento").textContent = nombre;
+   tr.querySelector(".correo").textContent = data.email;
+   tr.querySelector(".telefono").textContent = data.phone;
+   tr.querySelector(".documento").textContent = data.document;
+   
+};
 
 
 const loadForm = (data) => {
@@ -223,16 +281,89 @@ const loadForm = (data) => {
 };
 
 
+const eliminar = async (element) => {
+    let id = element.dataset.id;
+    const tr = document-querySelector(`#users_${id}`);
+    const username = tr.querySelector(".nombre").textContent;
+    const confirmdelete = confirm(`Desea eliminar al usuario ${username} ?`);
 
-const remover = (e, input) =>{
-    if (input.value != "") {
-        input.classList.remove("error");
-        input.classList.add("correcto");
-    }else{
-        input.classList.remove("correcto");
-        input.classList.add("error");
+    if (confirmdelete) {
+        const response = await enviar(`${URL}/users/${id}`, {
+        method: "DELETE",
+        headers: {
+            'Content-Type': 'application/json; charset=UTF-8',
+        },
+    });
+    }
+    tr.remove()
+    
+    
+}
+addEventListener("DOMContentLoaded", (event) => {
+    documentos();
+    listar();
+    //console.log(politicas.checked);
+    if(!politicas.checked){
+        // console.log(boton);
+        button.setAttribute("disabled", "");
+    };
+})   
+
+document.addEventListener("click", (e) =>{
+    if (e.target.matches(".modificar")) {  
+    buscar(e.target)  
+    }
+
+    if (e.target.matches(".eliminar")) {
+    eliminar(e.target)
+    }
+
+    if (e.target.matches(".first")) {
+        const nodos = tbody;
+        const first = e.target.dataset.first
+        console.log(first);
+        
+        while(nodos.firstChild){
+            nodos.removeChild(nodos.firstChild)
+        }
+        listar(first)
+    }
+
+    if (e.target.matches(".prev")) {
+        const nodos = tbody;
+        const prev = e.target.dataset.prev
+        console.log(prev);
+        
+        while(nodos.firstChild){
+            nodos.removeChild(nodos.firstChild)
+        }
+        listar(prev)
+    }
+
+    if (e.target.matches(".next")) {
+        const nodos = tbody;
+        const next = e.target.dataset.next
+        console.log(next);
+        
+        while(nodos.firstChild){
+            nodos.removeChild(nodos.firstChild)
+        }
+        listar(next)
+    }
+
+    if (e.target.matches(".last")) {
+        const nodos = tbody;
+        const last = e.target.dataset.last
+        console.log(last);
+        
+
+        while(nodos.firstChild){
+            nodos.removeChild(nodos.firstChild)
+        }
+        listar(last)
     }
 }
+);
 
 const vaciarCampos = () => {
 nombre.value="" ;
@@ -324,4 +455,17 @@ nombre.addEventListener("keypress", (event)=>{
 apellido.addEventListener("keypress", (event)=>{
     letras(event, apellido)
 })
+//boton enviar hasta que se acepten las politicas
 
+
+documento.addEventListener("keypress", numeros)
+telefono.addEventListener("keypress", numeros)
+nombre.addEventListener("keypress", (event)=>{
+    letras(event, nombre)
+});
+apellido.addEventListener("keypress", (event)=>{
+    letras(event, apellido)
+});
+correo.addEventListener("blur", (event)=>{
+    correo(event, email)
+});
